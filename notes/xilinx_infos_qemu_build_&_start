@@ -1,0 +1,32 @@
+Building for aarch64 ARM infos aus dem "QEMU Quick Reference Card" (Firefox Bookmark)
+
+1. Clone Qemu, update sub-modules, dtc and pixman
+ - https://github.com/qemu/qemu (official)
+ - https://github.com/Xilinx/qemu (xilinx)
+
+* git submodule update --init pixman dtc
+
+2. It's recommended to do an out-of-tree build
+    make a folder, change to the folder and build qemu
+
+* rm -rf arm_build
+* mkdir -p arm_build; cd arm_build;
+* ../configure --python=/usr/bin/python2 --target-list="aarch64-softmmu,microblazeel-softmmu,arm-softmmu" --enable-debug
+--extra-cflags="-DXILINX_SPIPS_ERR_DEBUG=2 \
+                    -DM25P80_ERR_DEBUG=2 \
+                    -DNAND_ERR_DEBUG=1 \
+                    -DARASAN_NFC_ERR_DEBUG=1 \
+                    -DSDHC_DEBUG \
+                    -DFDT_GENERIC_UTIL_ERR_DEBUG=2 \
+                    -DCADENCE_GEM_ERR_DEBUG \
+    -DCONFIG_FDT" --enable-fdt --enable-sdl --disable-werror
+
+ - not sure about flags (other tutorial -> www.wiki.xilinx.com/QEMU):
+      --disable-kvm --disable-xen
+ - not working but in documentation:
+      --force-internal-fdt
+
+##################### youtube video -> set up a build system, custom build system for arm processor
+
+yocto: created handy system for building custom linux distribution (custom embedded systems) (en.wikipedia.org/wiki/Yocto_Project)
+quick start guide: http://www.yoctoproject.org/docs/2.1/yocto-project-qs/yocto-project-qs.html

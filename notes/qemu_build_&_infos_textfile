@@ -1,0 +1,113 @@
+build qemu:
+../configure --python=/usr/bin/python2 --disable-werror --disable-strip --enable-debug --target-list="x86_64-softmmu"
+./configure --python=/usr/bin/python2 --help
+
+# from sweb /arch/x86/32/CMakelists.include
+# qemu: Run qemu in non debugging mode
+qemu-system-i386 -m 8M -cpu qemu32 -drive file=SWEB-flat.vmdk,index=0,media=disk,format=raw -debugcon stdio -no-reboot
+# qemugdb: Run qemu in debugging mode
+qemu-system-i386 -no-kvm -s -S -m 8M -drive file=SWEB-flat.vmdk,index=0,media=disk,format=raw -debugcon stdio -no-reboot
+
+CC=gcc-6 CC=g++-6 make mrproper
+
+---------> don't forget buildqemu script! go to root folder "vim buildqemu"
+
++++++++++++++ trace function qemu
+
+--> memory und tcg traces available im file trace-events!
+--> trace erstellen: http://git.qemu.org/?p=qemu.git;a=blob_plain;f=docs/devel/tracing.txt;hb=HEAD
+--> https://rwmj.wordpress.com/2016/03/17/tracing-qemu-guest-execution/
+
+Firstly you have to compile QEMU from source. Before compiling it, read docs/tracing.txt carefully.
+Also edit trace-events and remove the disable keyword from the following lines
+
+qemu/trace-events
+Beispiel:
+    # TCG related tracing (mostly disabled by default)
+    # cpu-exec.c
+    disable exec_tb(void *tb, uintptr_t pc) "tb:%p pc=0x%"PRIxPTR
+    disable exec_tb_nocache(void *tb, uintptr_t pc) "tb:%p pc=0x%"PRIxPTR
+    disable exec_tb_exit(void *last_tb, unsigned int flags) "tb:%p flags=%x"
+
+Für mich interessant?
+    # memory.c
+    memory_region_ops_read(int cpu_index, void *mr, uint64_t addr, uint64_t value, unsigned size) "cpu %d mr %p addr %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_ops_write(int cpu_index, void *mr, uint64_t addr, uint64_t value, unsigned size) "cpu %d mr %p addr %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_subpage_read(int cpu_index, void *mr, uint64_t offset, uint64_t value, unsigned size) "cpu %d mr %p offset %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_subpage_write(int cpu_index, void *mr, uint64_t offset, uint64_t value, unsigned size) "cpu %d mr %p offset %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_tb_read(int cpu_index, uint64_t addr, uint64_t value, unsigned size) "cpu %d addr %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_tb_write(int cpu_index, uint64_t addr, uint64_t value, unsigned size) "cpu %d addr %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_ram_device_read(int cpu_index, void *mr, uint64_t addr, uint64_t value, unsigned size) "cpu %d mr %p addr %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_ram_device_write(int cpu_index, void *mr, uint64_t addr, uint64_t value, unsigned size) "cpu %d mr %p addr %#"PRIx64" value %#"PRIx64" size %u"
+--------> siehe memory.c zeile 1125
+
+*TODO* offene fragen.. wo ist das trace file? warum kein file unter /usr/share/qemu?
+
+################## debug gdb
+
+gdb
+set architecture i386:x86-64
+target remote localhost:1234
+
+zum testen:
+minimal programm schreiben, compilieren, gdb darauf ausführen
+-> gcc -O0 -m32 -g x.c
+-> gdb qemu-i386
+
+++++++++++++++++++++++++++++++ MEMORY ++++++++++++++++ siehe docs/memory.txt
+
+Types of regions
+----------------
+
+There are multiple types of memory regions (all represented by a single C type
+MemoryRegion):
+
+- RAM: a RAM region is simply a range of host memory that can be made available
+  to the guest.
+  You typically initialize these with memory_region_init_ram().  Some special
+  purposes require the variants memory_region_init_resizeable_ram(),
+  memory_region_init_ram_from_file(), or memory_region_init_ram_ptr()
+
+  memory_region_init_ram_device_ptr
+   -> gibt ein ganz normales byte array zurück!
+   -> definition eigener callback funktionen zu machen.. siehe "mr->"
+
+Anwendungen auf Xilinx zynq > zybo zed > boards
+  qemu zynq "start software" tutorial..
+
+Board befindet sich: /qemu/hw/arm/xilinx_zynq.c
+ -> dies als Ref nehmen und eine Verschlüsselung einbauen.
+
+*TODO*
+1. Software zum laufen bringen auf dem board.
+ -> programm schreiben was über die serielle schnittstelle schreibt zb.
+
+
+#important stuff:
+1. Zum Verständnis -
+  The first meaning of ‘target’ means the emulated target machine
+  architecture. For example, when emulating mips machine on x86,
+  the target is mips and host is x86. However,
+  in tcg(tiny code generator), target has a different meaning.
+  It means the generated binary architecture.
+
+  Function decode_opc is used for decoding all the fetched
+  instructions before tcg generating the target binary!
+
+2. softmmu model
+  Given the guest virtual address, how does qemu find the
+  corresponding host virtual address? First qemu needs to
+  translate the guest virtual address to guest physical address.
+  Then qemu needs to find the PhysPageDesc entry in table
+  l1_phys_map and get the phys_offset. At last qemu should add
+  phys_offset to phys_ram_base to get the host virtual address.
+
+  Qemu uses a softmmu model to speed up this process.
+  Its main idea is storing the offset of guest virtual address
+  to host virtual address in a TLB table. When translating the
+  guest virtual address to host virtual address, it will search
+  this TLB table firstly. If there is an entry in the table,
+  then qemu can add this offset to guest virtual address to get
+  the host virtual address directly. Otherwise, it needs to search
+  the l1_phys_map table and then fill the corresponding entry to
+  the TLB table.
