@@ -1,5 +1,13 @@
 build qemu:
-../configure --python=/usr/bin/python2 --disable-werror --disable-strip --enable-debug --target-list="x86_64-softmmu"
+
+#submodule dependicies:
+git submodule update --init dtc pixman
+#tool dependicies:
+sudo apt-get install autoconf automake libtool
+
+Beispielaufruf:
+./configure --python=/usr/bin/python2 --disable-werror --disable-strip --enable-debug --target-list="x86_64-softmmu"
+Hilfe:
 ./configure --python=/usr/bin/python2 --help
 
 # from sweb /arch/x86/32/CMakelists.include
@@ -8,6 +16,8 @@ qemu-system-i386 -m 8M -cpu qemu32 -drive file=SWEB-flat.vmdk,index=0,media=disk
 # qemugdb: Run qemu in debugging mode
 qemu-system-i386 -no-kvm -s -S -m 8M -drive file=SWEB-flat.vmdk,index=0,media=disk,format=raw -debugcon stdio -no-reboot
 
+
+#SWEB FLAG?
 CC=gcc-6 CC=g++-6 make mrproper
 
 ---------> don't forget buildqemu script! go to root folder "vim buildqemu"
@@ -75,12 +85,25 @@ MemoryRegion):
 Anwendungen auf Xilinx zynq > zybo zed > boards
   qemu zynq "start software" tutorial..
 
-Board befindet sich: /qemu/hw/arm/xilinx_zynq.c
- -> dies als Ref nehmen und eine Verschlüsselung einbauen.
+Mein Board befindet sich nun: /qemu/hw/arm/xilinx_zynq_enc.c
+ -> Verschlüsselung einbauen.
+
+xilinx_zynq_enc.c -> memory_region_allocate_system_memory
+numa.c -> memory_region_allocate_system_memory // header = boards.h
+memory.c -> memory_region_init
+ --> ändern auf memory_region_init_ram_device_ptr?
+
+ memory_region_init                   (MemoryRegion *mr,Object *owner,const char *name,uint64_t size)
+ memory_region_init_ram_device_ptr    (MemoryRegion *mr,Object *owner,const char *name,uint64_t size,void *ptr)
+
 
 *TODO*
 1. Software zum laufen bringen auf dem board.
  -> programm schreiben was über die serielle schnittstelle schreibt zb.
+
+
+
+
 
 
 #important stuff:
