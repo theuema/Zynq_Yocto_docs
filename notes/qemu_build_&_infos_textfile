@@ -82,26 +82,19 @@ MemoryRegion):
    -> gibt ein ganz normales byte array zurück!
    -> definition eigener callback funktionen zu machen.. siehe "mr->"
 
-Anwendungen auf Xilinx zynq > zybo zed > boards
-  qemu zynq "start software" tutorial..
-
 Mein Board befindet sich nun: /qemu/hw/arm/xilinx_zynq_enc.c
- -> Verschlüsselung einbauen.
+Siehe files:
+  runqemu script in poky/scripts zeile 1065.
+    -> tauscht die executable as wie qemu aufgerufen wird
 
-xilinx_zynq_enc.c -> memory_region_allocate_system_memory
-numa.c -> memory_region_allocate_system_memory // header = boards.h
-memory.c -> memory_region_init
- --> ändern auf memory_region_init_ram_device_ptr?
+  rename in meta-xilinx/conf/machine/qemu-zynq7.conf
+   -> QD_Machine = “- machine xilinx-zynq-a9“
+  to
+   -> QD_Machine = “- machine xilinx-zynq-a9_enc“
 
+  qemu invocation -> ………… -machine xilinx-zynq-a9_enc
  memory_region_init                   (MemoryRegion *mr,Object *owner,const char *name,uint64_t size)
  memory_region_init_ram_device_ptr    (MemoryRegion *mr,Object *owner,const char *name,uint64_t size,void *ptr)
-
-
-*TODO*
-1. Software zum laufen bringen auf dem board.
- -> programm schreiben was über die serielle schnittstelle schreibt zb.
-
-
 
 
 
@@ -134,3 +127,38 @@ memory.c -> memory_region_init
   the host virtual address directly. Otherwise, it needs to search
   the l1_phys_map table and then fill the corresponding entry to
   the TLB table.
+
+  #Watchpoints
+
+exec.c zeile 2221 -> if (cpu->watchpoint_hit) {
+in clion!
+
+  /* We re-entered the check after replacing the TB. Now raise
+ * the debug interrupt so that is will trigger after the
+ * current instruction. */
+
+/* THEUEMA
+ * If the memory address is watched this function will be called 2 times for one watchpoint.
+ *
+ * -> 2nd call happens from either
+ * -> tb_check_watchpoint->watch_mem_read()->check_watchpoint()
+ * -> or
+ * -> tb_check_watchpoint->watch_mem_write()->check_watchpoint()
+ *
+ * This function is called from memory watch functions
+ * watch_mem_read() & watch_mem_write(), which are called by Macros or something?
+ *
+ * At first call it will find and invalidate the corresponding TB. (cpu->watchpoint_hit == NULL)
+ * It is either searched in the Hash Table or re-generated.
+ * Some flags are set including BP_WATCHPOINT_HIT which leads us HERE in 2nd call.
+ * Here, the interrupt happens and we get a DEBUG message to the terminal.
+ *
+ * Why do qemu need to invalidate current translation block and regenerate the code?
+ * Because most of the time a memory access is in the middle of a translation block.
+ * If we want to rerun this instruction,
+ * we need to regenerate the code from the current instruction (memory address).
+ * Moreover before invalidating the translation block,
+ * qemu needs to sync the cpu state to guest cpu(cpu_restore_state).
+ * That’s because the cpu state in the middle of translation block is different from the actual cpu state.
+ * --> Understanding this process needs some knowledge of binary translation.
+ * */
