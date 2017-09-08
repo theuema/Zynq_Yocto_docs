@@ -1,0 +1,201 @@
+Boot seq with crypt and without: 
+
+[Crypt]
+
+-------------- > break crypt_boot_data 
+-------------- > with boot crypt & w/o boot crypt
+before crypt_boot_data:
+(gdb) x/40xb 0x7fffcaa04810                                                       
+0x7fffcaa04810: 0x53    0x04    0x00    0xf8    0x00    0x00    0x00    0x00
+0x7fffcaa04818: 0x00    0x00    0x00    0x00    0x00    0x00    0x00    0x00
+0x7fffcaa04820: 0x00    0x00    0x00    0x00    0x00    0x00    0x00    0x00
+0x7fffcaa04828: 0x00    0x00    0x00    0x00    0x00    0x00    0x00    0x00
+0x7fffcaa04830: 0x00    0x00    0x00    0x00    0x00    0x00    0x00    0x00
+
+after crypt_boot_data: 
+x/40xb 0x7fffcaa04810
+0x7fffcaa04810: 0xbc    0xc9    0xaa    0x71    0x67    0x45    0x23    0x21
+0x7fffcaa04818: 0xef    0xcd    0xab    0x89    0x67    0x45    0x23    0x11
+0x7fffcaa04820: 0xef    0xcd    0xaa    0x89    0x67    0x45    0x23    0x21
+0x7fffcaa04828: 0xef    0xcd    0xab    0x89    0x67    0x45    0x23    0x11
+0x7fffcaa04830: 0xef    0xcd    0xaa    0x89    0x67    0x45    0x23    0x21
+
+[ok] for key: 	//   15 14 13 12 11 10 9  8  7  6  5  4  3  2  1  0   // tested byte_nr
+		// 0x11 23 45 67 89 AB CD EF 21 23 45 67 89 AA CD EF  // curr_key 128bit
+
+(gdb) p/x data
+$3 = 0xf8000453
+(gdb) n
+memory_region_read_accessor (mr=0x555556ca1290, addr=788547600, value=0x7fffdc34f080,
+    size=4, shift=0, mask=4294967295, attrs=...) 
+
+(gdb) n
+
+(gdb) p/x *value
+$4 = 0xf8000453
+(gdb) p/x r
+$6 = 0x0
+(gdb) p access_size
+$7 = 4
+(gdb) p i 
+$8 = 4
+(gdb) p/x access_mask
+$10 = 0xffffffff
+
+memory_region_dispatch_read1 (mr=0x555556ca1290, addr=788547600, pval=0x7fffdc34f080,
+    size=4, attrs=...) at /working/qemu/memory.c:1253
+memory_region_dispatch_read (mr=0x555556ca1290, addr=788547600, pval=0x7fffdc34f080,
+    size=4, attrs=...) at /working/qemu/memory.c:1269
+(gdb) p r
+$11 = 0
+
+address_space_ldl_internal (as=0x555556d71b40, addr=788547600, attrs=..., result=0x0,
+    endian=DEVICE_LITTLE_ENDIAN) at /working/qemu/memory_ldst.inc.c:47
+(gdb) p/x val
+$13 = 0xf8000453
+get_phys_addr_v6 (env=0x555556ca9748, address=4034936840, access_type=1,
+    mmu_idx=ARMMMUIdx_S1NSE1, phys_ptr=0x7fffdc34f308, attrs=0x7fffdc34f300,
+    prot=0x7fffdc34f2fc, page_size=0x7fffdc34f310, fsr=0x7fffdc34f370, fi=0x7fffdc34f390)
+    at /working/qemu/target/arm/helper.c:7620
+(gdb) p/x ap
+$15 = 0x1
+
+in helper.c: 
+			case 2: case 3: /* 4k page.  */                                       │
+   │7631                phys_addr = (desc & 0xfffff000) | (address & 0xfff);              │
+   │7632                xn = desc & 1;                                                    │
+   │7633                *page_size = 0x1000;
+
+(gdb) p/x phys_addr
+$16 = 0xf8000008
+(gdb) p/x xn 
+$17 = 0x1
+(gdb) p/x *page_size
+$18 = 0x1000
+
+(gdb) p/x *prot
+$20 = 0x3
+
+(gdb) p/x *phys_ptr
+$21 = 0xf8000008
+
+return false from helper.c
+
+arm_tlb_fill (cs=0x555556ca14b0, address=4034936840, access_type=1, mmu_idx=1,
+    fsr=0x7fffdc34f370, fi=0x7fffdc34f390) at /working/qemu/target/arm/helper.c:8468
+(gdb) p/x address
+$22 = 0xf0804000
+
+
+helper_le_stl_mmu (env=0x555556ca9748, addr=4034936840, val=57101, oi=33,
+    retaddr=140736970841398) at /working/qemu/softmmu_template.h:288
+(gdb) p/x tlb_addr
+$23 = 0xf0804080
+
+---> .addr_write
+
+
+
+-------------- > 1st apply crypt after NOT encrypting all boot stuff
+break apply_crypt
+
+************* apply_crypt
+(gdb) p/x addr
+$1 = 0x7c20
+
+(gdb) p/x *data
+$2 = 0x2f 00 48 11
+
+
+
+-------------- > 1st apply crypt after encrypting all boot stuff
+break apply_crypt
+
+************* apply_crypt
+p/x addr
+$2 = 0x700c
+
+p/x *data
+$4 = 0x30 04 0e
+
+(gdb) set $ptr1 = qemu_map_ram_ptr(mr->ram_block, 0x700c)
+(gdb) p $ptr1
+$7 = (void *) 0x7fff9ba0700c
+
+(gdb) x/4xb 0x7fff9ba0700c
+0x7fff9ba0700c: 0x0e    0x04    0x30    0x00
+
+************* apply_crypt
+
+$8 = 0x5d94
+(gdb) p/x *data
+$9 = 0x0
+
+set $ptr2 = qemu_map_ram_ptr(mr->ram_block, 0x5d94)
+
+(gdb) p $ptr2
+$10 = (void *) 0x7fff9ba05d94
+
+x/4xb 0x7fff9ba05d94
+0x7fff9ba05d94: 0x00    0x00    0x00    0x00
+
+************* apply_crypt
+
+(gdb) p/x addr
+$12 = 0x7ffc
+
+(gdb) p/x *data
+$15 = 0x2f ff dc 61
+
+set $ptr3 = qemu_map_ram_ptr(mr->ram_block, 0x7ffc)
+(gdb) p/x $ptr3
+$16 = 0x7fff9ba07ffc
+x/4xb 0x7fff9ba07ffc
+0x7fff9ba07ffc: 0x61    0xdc    0xff    0x2f
+
+************* apply_crypt
+
+(gdb) p/x addr
+$18 = 0x2fffdfc0
+(gdb) p/x *data // before decrypt
+$19 = 0xa6 55 2f d1
+
+(gdb) p/x *data // after decrypt -> this will be returned!
+$21 = 0x2f ff e2 3e
+
+set $ptr4 = qemu_map_ram_ptr(mr->ram_block, 0x2fffdfc0)
+(gdb) p/x $ptr4
+$24 = 0x7fffcb9fdfc0
+
+x/4xb 0x7fffcb9fdfc0
+0x7fffcb9fdfc0: 0xd1    0x2f    0x55    0xa6
+
+************* apply_crypt
+
+(gdb) p/x addr
+$27 = 0x4020
+(gdb) p/x *data
+$28 = 0x0
+
+************* apply_crypt
+
+(gdb) p/x addr
+$27 = 0x4020
+(gdb) p/x *data
+$28 = 0x0
+
+************* apply_crypt
+
+(gdb) p/x addr
+$27 = 0x4020
+(gdb) p/x *data
+$28 = 0x0
+
+************* apply_crypt
+
+(gdb) p/x addr
+$27 = 0x4020
+(gdb) p/x *data
+$28 = 0x0
+
+LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOP --> so there is something with the decryption!

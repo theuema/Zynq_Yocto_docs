@@ -1,0 +1,53 @@
+Bootloader:
+40 byte from 0x0 in ram_ext:
+addr1 0x0 mapped to 0x7fff9ba00000
+
+=>
+$gdb x/40xb 0x7fff9ba00000
+	0x7fff9ba00000: 0x04    0xe0    0x8f    0xe2    0x04    0xf0    0x1f    0xe5
+	0x7fff9ba00008: 0x00    0x01    0x00    0x00    0x00    0x00    0xa0    0xe3
+	0x7fff9ba00010: 0x04    0x10    0x9f    0xe5    0x04    0x20    0x9f    0xe5
+	0x7fff9ba00018: 0x04    0xf0    0x9f    0xe5    0x32    0x0d    0x00    0x00
+	0x7fff9ba00020: 0x00    0x10    0x4e    0x08    0x00    0x80    0x00    0x00
+
+$gdb x/40xib 0x7fff9ba00000
+	0x7fff9ba00000:      add    $0xe0,%al
+	0x7fff9ba00002:      (bad)
+	0x7fff9ba00003:      loop   0x7fff9ba00009
+	0x7fff9ba00005:      lock (bad)
+	0x7fff9ba00007:      in     $0x0,%eax
+	0x7fff9ba00009:      add    %eax,(%rax)
+	0x7fff9ba0000b:      add    %al,(%rax)
+	0x7fff9ba0000d:      add    %ah,-0x60effb1d(%rax)
+	0x7fff9ba00013:      in     $0x4,%eax
+	0x7fff9ba00015:      and    %bl,-0x600ffb1b(%rdi)
+	0x7fff9ba0001b:      in     $0x32,%eax
+	0x7fff9ba0001d:      or     $0x10000000,%eax
+	0x7fff9ba00022:      rex.WRX or %r8b,(%rax)
+	0x7fff9ba00025:      addb   $0x0,(%rax)
+	0x7fff9ba00028:      add    %al,(%rax)
+	0x7fff9ba0002a:      add    %al,(%rax)
+	0x7fff9ba0002c:      add    %al,(%rax)
+	0x7fff9ba0002e:      add    %al,(%rax)
+	0x7fff9ba00030:      add    %al,(%rax)
+	0x7fff9ba00032:      add    %al,(%rax)
+	0x7fff9ba00034:      add    %al,(%rax)
+	0x7fff9ba00036:      add    %al,(%rax)
+	0x7fff9ba00038:      add    %al,(%rax)
+	0x7fff9ba0003a:      add    %al,(%rax)
+	0x7fff9ba0003c:      add    %al,(%rax)
+	0x7fff9ba0003e:      add    %al,(%rax)
+	0x7fff9ba00040:      add    %al,(%rax)
+	0x7fff9ba00042:      add    %al,(%rax)
+	0x7fff9ba00044:      add    %al,(%rax)
+	0x7fff9ba00046:      add    %al,(%rax)
+	0x7fff9ba00048:      add    %al,(%rax)
+	0x7fff9ba0004a:      add    %al,(%rax)
+	0x7fff9ba0004c:      add    %al,(%rax)
+	0x7fff9ba0004e:      add    %al,(%rax)
+	0x7fff9ba00050:      add    %al,(%rax)
+	0x7fff9ba00052:      add    %al,(%rax)
+	0x7fff9ba00054:      add    %al,(%rax)
+	0x7fff9ba00056:      add    %al,(%rax)
+	0x7fff9ba00058:      add    %al,(%rax)
+	0x7fff9ba0005a:      add    %al,(%rax)

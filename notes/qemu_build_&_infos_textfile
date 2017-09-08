@@ -1,70 +1,37 @@
-build qemu:
-
+------------------- BUILD QEMU:
 #submodule dependicies:
 git submodule update --init dtc pixman
+
 #tool dependicies:
 sudo apt-get install autoconf automake libtool
 
 Beispielaufruf:
 ./configure --python=/usr/bin/python2 --disable-werror --disable-strip --enable-debug --target-list="x86_64-softmmu"
+
 Hilfe:
 ./configure --python=/usr/bin/python2 --help
 
+------------------- RUN QEMU
 # from sweb /arch/x86/32/CMakelists.include
+
 # qemu: Run qemu in non debugging mode
 qemu-system-i386 -m 8M -cpu qemu32 -drive file=SWEB-flat.vmdk,index=0,media=disk,format=raw -debugcon stdio -no-reboot
+
 # qemugdb: Run qemu in debugging mode
 qemu-system-i386 -no-kvm -s -S -m 8M -drive file=SWEB-flat.vmdk,index=0,media=disk,format=raw -debugcon stdio -no-reboot
-
 
 #SWEB FLAG?
 CC=gcc-6 CC=g++-6 make mrproper
 
----------> don't forget buildqemu script! go to root folder "vim buildqemu"
+------------------- don't forget buildqemu script! go to qemu root folder $vim buildqemu
 
-+++++++++++++ trace function qemu
+------------------- DEBUG mit gdb
 
---> memory und tcg traces available im file trace-events!
---> trace erstellen: http://git.qemu.org/?p=qemu.git;a=blob_plain;f=docs/devel/tracing.txt;hb=HEAD
---> https://rwmj.wordpress.com/2016/03/17/tracing-qemu-guest-execution/
+siehe buildqemu script $vim buildqemu
+oder
+GDB.pdf
 
-Firstly you have to compile QEMU from source. Before compiling it, read docs/tracing.txt carefully.
-Also edit trace-events and remove the disable keyword from the following lines
-
-qemu/trace-events
-Beispiel:
-    # TCG related tracing (mostly disabled by default)
-    # cpu-exec.c
-    disable exec_tb(void *tb, uintptr_t pc) "tb:%p pc=0x%"PRIxPTR
-    disable exec_tb_nocache(void *tb, uintptr_t pc) "tb:%p pc=0x%"PRIxPTR
-    disable exec_tb_exit(void *last_tb, unsigned int flags) "tb:%p flags=%x"
-
-Für mich interessant?
-    # memory.c
-    memory_region_ops_read(int cpu_index, void *mr, uint64_t addr, uint64_t value, unsigned size) "cpu %d mr %p addr %#"PRIx64" value %#"PRIx64" size %u"
-    memory_region_ops_write(int cpu_index, void *mr, uint64_t addr, uint64_t value, unsigned size) "cpu %d mr %p addr %#"PRIx64" value %#"PRIx64" size %u"
-    memory_region_subpage_read(int cpu_index, void *mr, uint64_t offset, uint64_t value, unsigned size) "cpu %d mr %p offset %#"PRIx64" value %#"PRIx64" size %u"
-    memory_region_subpage_write(int cpu_index, void *mr, uint64_t offset, uint64_t value, unsigned size) "cpu %d mr %p offset %#"PRIx64" value %#"PRIx64" size %u"
-    memory_region_tb_read(int cpu_index, uint64_t addr, uint64_t value, unsigned size) "cpu %d addr %#"PRIx64" value %#"PRIx64" size %u"
-    memory_region_tb_write(int cpu_index, uint64_t addr, uint64_t value, unsigned size) "cpu %d addr %#"PRIx64" value %#"PRIx64" size %u"
-    memory_region_ram_device_read(int cpu_index, void *mr, uint64_t addr, uint64_t value, unsigned size) "cpu %d mr %p addr %#"PRIx64" value %#"PRIx64" size %u"
-    memory_region_ram_device_write(int cpu_index, void *mr, uint64_t addr, uint64_t value, unsigned size) "cpu %d mr %p addr %#"PRIx64" value %#"PRIx64" size %u"
---------> siehe memory.c zeile 1125
-
-*TODO* offene fragen.. wo ist das trace file? warum kein file unter /usr/share/qemu?
-
-################## debug gdb
-
-gdb
-set architecture i386:x86-64
-target remote localhost:1234
-
-zum testen:
-minimal programm schreiben, compilieren, gdb darauf ausführen
--> gcc -O0 -m32 -g x.c
--> gdb qemu-i386
-
-++++++++++++++++++++++++++++++ MEMORY ++++++++++++++++ siehe docs/memory.txt
+------------------- MEMORY QEMU ------------------- siehe docs/memory.txt
 
 Types of regions
 ----------------
@@ -93,14 +60,13 @@ Siehe files:
    -> QD_Machine = “- machine xilinx-zynq-a9_enc“
 
   qemu invocation -> ………… -machine xilinx-zynq-a9_enc
- memory_region_init                   (MemoryRegion *mr,Object *owner,const char *name,uint64_t size)
- memory_region_init_ram_device_ptr    (MemoryRegion *mr,Object *owner,const char *name,uint64_t size,void *ptr)
 
 
 
 
-#important stuff:
-1. Zum Verständnis -
+
+------------------- Zum Verständnis QEMU
+1. 
   The first meaning of ‘target’ means the emulated target machine
   architecture. For example, when emulating mips machine on x86,
   the target is mips and host is x86. However,
@@ -128,7 +94,8 @@ Siehe files:
   the l1_phys_map table and then fill the corresponding entry to
   the TLB table.
 
-  #Watchpoints
+
+------------------- Watchpoints QEMU
 
 exec.c zeile 2221 -> if (cpu->watchpoint_hit) {
 in clion!
@@ -162,3 +129,34 @@ in clion!
  * That’s because the cpu state in the middle of translation block is different from the actual cpu state.
  * --> Understanding this process needs some knowledge of binary translation.
  * */
+
+------------------- TRACE function qemu
+
+--> memory und tcg traces available im file trace-events!
+--> trace erstellen: http://git.qemu.org/?p=qemu.git;a=blob_plain;f=docs/devel/tracing.txt;hb=HEAD
+--> https://rwmj.wordpress.com/2016/03/17/tracing-qemu-guest-execution/
+
+Firstly you have to compile QEMU from source. Before compiling it, read docs/tracing.txt carefully.
+Also edit trace-events and remove the disable keyword from the following lines
+
+qemu/trace-events
+Beispiel:
+    # TCG related tracing (mostly disabled by default)
+    # cpu-exec.c
+    disable exec_tb(void *tb, uintptr_t pc) "tb:%p pc=0x%"PRIxPTR
+    disable exec_tb_nocache(void *tb, uintptr_t pc) "tb:%p pc=0x%"PRIxPTR
+    disable exec_tb_exit(void *last_tb, unsigned int flags) "tb:%p flags=%x"
+
+Für mich interessant?
+    # memory.c
+    memory_region_ops_read(int cpu_index, void *mr, uint64_t addr, uint64_t value, unsigned size) "cpu %d mr %p addr %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_ops_write(int cpu_index, void *mr, uint64_t addr, uint64_t value, unsigned size) "cpu %d mr %p addr %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_subpage_read(int cpu_index, void *mr, uint64_t offset, uint64_t value, unsigned size) "cpu %d mr %p offset %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_subpage_write(int cpu_index, void *mr, uint64_t offset, uint64_t value, unsigned size) "cpu %d mr %p offset %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_tb_read(int cpu_index, uint64_t addr, uint64_t value, unsigned size) "cpu %d addr %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_tb_write(int cpu_index, uint64_t addr, uint64_t value, unsigned size) "cpu %d addr %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_ram_device_read(int cpu_index, void *mr, uint64_t addr, uint64_t value, unsigned size) "cpu %d mr %p addr %#"PRIx64" value %#"PRIx64" size %u"
+    memory_region_ram_device_write(int cpu_index, void *mr, uint64_t addr, uint64_t value, unsigned size) "cpu %d mr %p addr %#"PRIx64" value %#"PRIx64" size %u"
+--------> siehe memory.c zeile 1125
+
+*TODO* offene fragen.. wo ist das trace file? warum kein file unter /usr/share/qemu?

@@ -1,0 +1,56 @@
+0x7fff9ba00100
+
+Board Setup:
+44 byte from 0x100 in ram_ext:
+addr1 0x100 mapped to 0x7fff9ba00100
+
+=>
+$gdb x/44xb 0x7fff9ba00100
+	0x7fff9ba00100: 0xf8    0x04    0xa0    0xe3    0x0d    0x1f    0x0d    0xe3
+	0x7fff9ba00108: 0x00    0x10    0x40    0xe3    0x08    0x10    0x80    0xe5
+	0x7fff9ba00110: 0x08    0x10    0x04    0xe3    0x01    0x10    0x40    0xe3
+	0x7fff9ba00118: 0x00    0x11    0x80    0xe5    0x7b    0x16    0x07    0xe3
+	0x7fff9ba00120: 0x00    0x10    0x40    0xe3    0x04    0x10    0x80    0xe5
+	0x7fff9ba00128: 0x1e    0xff    0x2f    0xe1
+
+$gdb x/40xib 0x7fff9ba00100
+	0x7fff9ba00100:      clc
+	0x7fff9ba00101:      add    $0xa0,%al
+	0x7fff9ba00103:      jrcxz  0x7fff9ba00112
+	0x7fff9ba00105:      (bad)
+	0x7fff9ba00106:      or     $0x401000e3,%eax
+	0x7fff9ba0010b:      jrcxz  0x7fff9ba00115
+	0x7fff9ba0010d:      adc    %al,0x41008e5(%rax)
+	0x7fff9ba00113:      jrcxz  0x7fff9ba00116
+	0x7fff9ba00115:      adc    %al,-0x1d(%rax)
+	0x7fff9ba00118:      add    %dl,(%rcx)
+	0x7fff9ba0011a:      and    $0x7b,%ch
+	0x7fff9ba0011d:      (bad)
+	0x7fff9ba0011e:      (bad)
+	0x7fff9ba0011f:      jrcxz  0x7fff9ba00121
+	0x7fff9ba00121:      adc    %al,-0x1d(%rax)
+	0x7fff9ba00124:      add    $0x10,%al
+	0x7fff9ba00126:      and    $0x1e,%ch
+	0x7fff9ba00129:      ljmp   *(%rdi)
+	0x7fff9ba0012b:      loope  0x7fff9ba0012d
+	0x7fff9ba0012d:      add    %al,(%rax)
+	0x7fff9ba0012f:      add    %al,(%rax)
+	0x7fff9ba00131:      add    %al,(%rax)
+	0x7fff9ba00133:      add    %al,(%rax)
+	0x7fff9ba00135:      add    %al,(%rax)
+	0x7fff9ba00137:      add    %al,(%rax)
+	0x7fff9ba00139:      add    %al,(%rax)
+	0x7fff9ba0013b:      add    %al,(%rax)
+	0x7fff9ba0013d:      add    %al,(%rax)
+	0x7fff9ba0013f:      add    %al,(%rax)
+	0x7fff9ba00141:      add    %al,(%rax)
+	0x7fff9ba00143:      add    %al,(%rax)
+	0x7fff9ba00145:      add    %al,(%rax)
+	0x7fff9ba00147:      add    %al,(%rax)
+	0x7fff9ba00149:      add    %al,(%rax)
+	0x7fff9ba0014b:      add    %al,(%rax)
+	0x7fff9ba0014d:      add    %al,(%rax)
+	0x7fff9ba0014f:      add    %al,(%rax)
+	0x7fff9ba00151:      add    %al,(%rax)
+	0x7fff9ba00153:      add    %al,(%rax)
+	0x7fff9ba00155:      add    %al,(%rax)

@@ -1,7 +1,0 @@
----- Exchange of build parts testing ----
-
-// bitbake runqemu command:
-  tmp/work/x86_64-linux/qemu-helper-native/1.0-r1/recipe-sysroot-native/usr/bin//qemu-system-aarch64 -net nic,netdev=net0,macaddr=52:54:00:12:34:02 -netdev tap,id=net0,ifname=tap0,script=no,downscript=no -initrd tmp/deploy/images/qemu-zynq7/core-image-minimal-qemu-zynq7-20170725140338.rootfs.cpio -nographic -serial null -serial mon:stdio  -machine xilinx-zynq-a9  -m 1024 -kernel tmp/deploy/images/qemu-zynq7/uImage--4.9-xilinx-v2017.1+git0+68e6869cfb-r0-qemu-zynq7-20170725140338.bin -append 'root=/dev/ram0 rw debugshell  mem=1024M ip=192.168.7.2::192.168.7.1:255.255.255.0 console=ttyPS0,115200 earlyprintk ' -dtb tmp/deploy/images/qemu-zynq7/qemu-zynq7.dtb
-
-// sweb qemu command:
-  qemu-system-i386 -m 8M -cpu qemu32 -drive file=SWEB-flat.vmdk,index=0,media=disk,format=raw -debugcon stdio -no-reboot

@@ -11,7 +11,8 @@ Building for aarch64 ARM infos aus dem "QEMU Quick Reference Card" (Firefox Book
 
 * rm -rf arm_build
 * mkdir -p arm_build; cd arm_build;
-* ../configure --python=/usr/bin/python2 --target-list="aarch64-softmmu,microblazeel-softmmu,arm-softmmu" --enable-debug
+* ../configure --python=/usr/bin/python2 --target-list="aarch64-softmmu" 
+--enable-debug
 --extra-cflags="-DXILINX_SPIPS_ERR_DEBUG=2 \
                     -DM25P80_ERR_DEBUG=2 \
                     -DNAND_ERR_DEBUG=1 \
@@ -26,7 +27,9 @@ Building for aarch64 ARM infos aus dem "QEMU Quick Reference Card" (Firefox Book
  - not working but in documentation:
       --force-internal-fdt
 
-##################### youtube video -> set up a build system, custom build system for arm processor
+------------------- youtube video -> 
+set up a build system, custom build system for arm processor
 
 yocto: created handy system for building custom linux distribution (custom embedded systems) (en.wikipedia.org/wiki/Yocto_Project)
+
 quick start guide: http://www.yoctoproject.org/docs/2.1/yocto-project-qs/yocto-project-qs.html
